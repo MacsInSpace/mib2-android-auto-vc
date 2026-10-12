@@ -1,3 +1,7 @@
+> [!WARNING]
+> Unfortunately I am not able to maintain this project anymore since I dont own the car anymore.
+> If someone is willing to take over the project feel free to contact me
+
 # MIB2 High Android Auto Virtual Cockpit
 
 This project aims to finish what VW started. To bring Navigation and music information from AndroidAuto to the VW Virtual Cockpit.
