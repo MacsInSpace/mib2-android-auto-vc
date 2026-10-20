@@ -26,9 +26,11 @@ public class NavigationHandler {
         switch (focus) {
             case Constants.NAVFOCUS_NATIVE: {
                 navStopped();
+                break;
             }
             case Constants.NAVFOCUS_PROJECTED: {
                 navStarted();
+                break;
             }
         }
     }

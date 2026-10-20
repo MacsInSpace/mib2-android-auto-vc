@@ -1,12 +1,18 @@
 package de.adi961.miblogger;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 
 public class MIBLogger {
 
     static String logPrefix = "MIBLogger";
+
+    // System.out of the HMI is not saved anywhere, so also keep a log file
+    static String logFilePath = "/tmp/VCAndroidAuto.log";
+    static long logFileMaxBytes = 1024 * 1024;
 
     public static final int TRACE = 1;
     public static final int DEBUG = 2;
@@ -77,7 +83,20 @@ public class MIBLogger {
     }
 
     void log(String level, String message) {
-        System.out.println("[" + logPrefix + "] [" + level + "] [" + getCallingClassName() + "]: " + message);
+        String line = "[" + logPrefix + "] [" + level + "] [" + getCallingClassName() + "]: " + message;
+        System.out.println(line);
+        writeToFile(System.currentTimeMillis() + " " + line);
+    }
+
+    private synchronized void writeToFile(String line) {
+        try {
+            File file = new File(logFilePath);
+            FileWriter writer = new FileWriter(logFilePath, file.length() < logFileMaxBytes);
+            writer.write(line + "\n");
+            writer.close();
+        } catch (IOException e) {
+            // logging must never break the HMI
+        }
     }
 
     private String getCallingClassName() {

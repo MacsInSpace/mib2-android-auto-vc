@@ -65,6 +65,8 @@ public class AndroidAutoTarget
     private /*final*/ String _classname = "AndroidAutoTarget";
     private ASLAndroidAutoExBoxServiceImpl apiImpl;
     private NavigationHandler navigationHandler;
+    // Set when registration reset the nav focus to native rather than the phone asking for it
+    private boolean navFocusResetByRegistration = false;
     private AVDCAudioCurrentTrackInfoCollector avdcAudioCurrentTrackInfoCollector = new AVDCAudioCurrentTrackInfoCollector();
 
     /*final*/ int[] OBSERVED_EVENTS = new int[]{
@@ -146,7 +148,7 @@ public class AndroidAutoTarget
         this.aslHandler.initTimerHandler(this.timerHandler);
         this.requestHandler.initExBoxNavServices(this.exboxGuidanceListenerImpl);
 
-        MIBLogger.getInstance().info("VCAndroidAuto mod available");
+        MIBLogger.getInstance().info("VCAndroidAuto mod available (MacsInSpace fork, arrows-after-sleep test)");
     }
 
 
@@ -189,6 +191,21 @@ public class AndroidAutoTarget
 
         this.dsihandler.handleDsiAndroidAuto2NavFocusRequestNotification(Constants.NAVFOCUS_NATIVE, 1);
         this.navigationHandler.navigationFocus(Constants.NAVFOCUS_NATIVE);
+        this.navFocusResetByRegistration = true;
+        MIBLogger.getInstance().info("DSI registered, nav focus reset to native");
+    }
+
+    // After sleep the DSI registers again and the focus reset above makes the
+    // car think Android Auto has no route, while the phone keeps navigating and
+    // does not ask for focus again. Turn data proves it is navigating.
+    private void restoreProjectedFocusIfReset() {
+        if (!this.navFocusResetByRegistration) {
+            return;
+        }
+        this.navFocusResetByRegistration = false;
+        MIBLogger.getInstance().info("turn data after a focus reset, restoring projected nav focus");
+        this.dsihandler.handleDsiAndroidAuto2NavFocusRequestNotification(Constants.NAVFOCUS_PROJECTED, 1);
+        this.navigationHandler.navigationFocus(Constants.NAVFOCUS_PROJECTED);
     }
 
     private void deInitializeDSI() {
@@ -291,6 +308,7 @@ public class AndroidAutoTarget
             logMessage.append("AndroidAutoTarget").append(".unregistered(").append(Util.isNullOrEmpty(string2) ? "<null>" : string).append(", ").append(n).append(")").log();
         }
         if (string2.equals(RuntimeGeneratedConstants.SERVICE_TS_NS[2])) {
+            MIBLogger.getInstance().info("DSI unregistered");
             this.deInitializeDSI();
             this.startupHandler.setDSI2Registered(false);
         }
@@ -360,6 +378,8 @@ public class AndroidAutoTarget
         this.dsihandler.handleDsiAndroidAuto2NavFocusRequestNotification(focus, valid);
 
         if (valid == 1) {
+            this.navFocusResetByRegistration = false;
+            MIBLogger.getInstance().info("nav focus from phone: " + focus);
             this.navigationHandler.navigationFocus(focus);
         }
     }
@@ -471,6 +491,7 @@ public class AndroidAutoTarget
         }
 
         if (valid == 1) {
+            this.restoreProjectedFocusIfReset();
             this.navigationHandler.handleNextTurnEvent(road, turnSide, event, turnAngle, turnNumber);
         }
     }
@@ -482,6 +503,7 @@ public class AndroidAutoTarget
         }
 
         if (valid == 1) {
+            this.restoreProjectedFocusIfReset();
             this.navigationHandler.handleUpdateNextTurnDistanceEvent(distanceMeters, timeSeconds);
         }
     }
