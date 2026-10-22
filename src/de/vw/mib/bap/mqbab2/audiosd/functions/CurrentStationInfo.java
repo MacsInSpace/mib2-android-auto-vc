@@ -3,6 +3,7 @@
  */
 package de.vw.mib.bap.mqbab2.audiosd.functions;
 
+import de.macsinspace.vcaa.BapStringCompat;
 import de.adi961.miblogger.MIBLogger;
 import de.vw.mib.bap.array.timer.Timer;
 import de.vw.mib.bap.array.timer.TimerNotifier;
@@ -162,7 +163,7 @@ public class CurrentStationInfo
             currentStationInfo_Status.secondaryInformation.setNullString();
             currentStationInfo_Status.si_Type = 73;
         } else {
-            currentStationInfo_Status.secondaryInformation.setContent(string);
+            BapStringCompat.set(currentStationInfo_Status.secondaryInformation, string);
             currentStationInfo_Status.si_Type = string != null && string.length() != 0 ? 73 : 0;
         }
         String string2 = this.getMediaService().getCurrentTrackInfo().getCurrentTrackAlbum();
@@ -170,7 +171,7 @@ public class CurrentStationInfo
             currentStationInfo_Status.tertiaryInformation.setNullString();
             currentStationInfo_Status.ti_Type = 74;
         } else {
-            currentStationInfo_Status.tertiaryInformation.setContent(string2);
+            BapStringCompat.set(currentStationInfo_Status.tertiaryInformation, string2);
             currentStationInfo_Status.ti_Type = string2 != null && string2.length() != 0 ? 74 : 0;
         }
     }
@@ -187,14 +188,14 @@ public class CurrentStationInfo
     }
 
     private void setStationInfoNoInformationAvailable(CurrentStationInfo_Status currentStationInfo_Status) {
-        currentStationInfo_Status.primaryInformation.setContent("");
+        BapStringCompat.set(currentStationInfo_Status.primaryInformation, "");
         currentStationInfo_Status.pi_Type = 0;
         currentStationInfo_Status.pi_Id = 0;
-        currentStationInfo_Status.secondaryInformation.setContent("");
+        BapStringCompat.set(currentStationInfo_Status.secondaryInformation, "");
         currentStationInfo_Status.si_Type = 0;
-        currentStationInfo_Status.tertiaryInformation.setContent("");
+        BapStringCompat.set(currentStationInfo_Status.tertiaryInformation, "");
         currentStationInfo_Status.ti_Type = 0;
-        currentStationInfo_Status.quaternaryInformation.setContent("");
+        BapStringCompat.set(currentStationInfo_Status.quaternaryInformation, "");
         currentStationInfo_Status.qi_Type = 0;
     }
 
@@ -204,22 +205,22 @@ public class CurrentStationInfo
         String string = mediaCurrentTrackInfo.getCurrentTrackTitle();
         boolean bl2 = bl = string != null && string.trim().length() != 0;
         if (bl) {
-            currentStationInfo_Status.primaryInformation.setContent(string);
+            BapStringCompat.set(currentStationInfo_Status.primaryInformation, string);
             currentStationInfo_Status.pi_Type = 72;
             currentStationInfo_Status.pi_Id = 0;
             this.setArtistAndAlbum(currentStationInfo_Status);
-            currentStationInfo_Status.quaternaryInformation.setContent("");
+            BapStringCompat.set(currentStationInfo_Status.quaternaryInformation, "");
             currentStationInfo_Status.qi_Type = 0;
         } else {
             int n = mediaCurrentTrackInfo.getCurrentTrackNumber();
-            currentStationInfo_Status.primaryInformation.setContent("");
+            BapStringCompat.set(currentStationInfo_Status.primaryInformation, "");
             currentStationInfo_Status.pi_Type = n != 0 ? 8 : 0;
             currentStationInfo_Status.pi_Id = n;
-            currentStationInfo_Status.secondaryInformation.setContent("");
+            BapStringCompat.set(currentStationInfo_Status.secondaryInformation, "");
             currentStationInfo_Status.si_Type = 0;
-            currentStationInfo_Status.tertiaryInformation.setContent("");
+            BapStringCompat.set(currentStationInfo_Status.tertiaryInformation, "");
             currentStationInfo_Status.ti_Type = currentStationInfo_Status.si_Type;
-            currentStationInfo_Status.quaternaryInformation.setContent("");
+            BapStringCompat.set(currentStationInfo_Status.quaternaryInformation, "");
             currentStationInfo_Status.qi_Type = currentStationInfo_Status.ti_Type;
         }
     }
@@ -243,27 +244,27 @@ public class CurrentStationInfo
         boolean bl = string.trim().length() != 0;
         int n = mediaCurrentTrackInfo.getCurrentTrackNumber();
         if (bl || n == 0) {
-            currentStationInfo_Status.primaryInformation.setContent(string);
+            BapStringCompat.set(currentStationInfo_Status.primaryInformation, string);
             currentStationInfo_Status.pi_Type = bl ? (this.isOnlyFilenameAvailable() ? 6 : 72) : 0;
             currentStationInfo_Status.pi_Id = 0;
             this.setArtistAndAlbum(currentStationInfo_Status);
             String string2 = currentStationInfo_Status.pi_Type != 0 || currentStationInfo_Status.si_Type != 0
                     || currentStationInfo_Status.ti_Type != 0 ? this.getActivePlayingFolderName() : "";
-            currentStationInfo_Status.quaternaryInformation.setContent(string2);
+            BapStringCompat.set(currentStationInfo_Status.quaternaryInformation, string2);
             int n2 = currentStationInfo_Status.qi_Type = string2.length() != 0 ? 1 : 0;
             if (string2.length() > 0 && currentStationInfo_Status.pi_Type == 0) {
                 currentStationInfo_Status.pi_Type = 72;
             }
         } else {
-            currentStationInfo_Status.primaryInformation.setContent("");
+            BapStringCompat.set(currentStationInfo_Status.primaryInformation, "");
             currentStationInfo_Status.pi_Type = n != 0 ? 6 : 0;
             currentStationInfo_Status.pi_Id = n;
-            currentStationInfo_Status.secondaryInformation.setContent("");
+            BapStringCompat.set(currentStationInfo_Status.secondaryInformation, "");
             currentStationInfo_Status.si_Type = 0;
-            currentStationInfo_Status.tertiaryInformation.setContent("");
+            BapStringCompat.set(currentStationInfo_Status.tertiaryInformation, "");
             currentStationInfo_Status.ti_Type = 0;
             String string3 = this.getActivePlayingFolderName();
-            currentStationInfo_Status.quaternaryInformation.setContent(string3);
+            BapStringCompat.set(currentStationInfo_Status.quaternaryInformation, string3);
             currentStationInfo_Status.qi_Type = string3.length() != 0 ? 1 : 0;
         }
     }
@@ -279,20 +280,19 @@ public class CurrentStationInfo
                         int n = mediaService.getDvdChapter();
                         int n2 = mediaService.getDvdChapterCount();
                         if (n == 0 || n2 == 0) {
-                            currentStationInfo_Status.primaryInformation.setContent("");
+                            BapStringCompat.set(currentStationInfo_Status.primaryInformation, "");
                             currentStationInfo_Status.pi_Type = 0;
                             currentStationInfo_Status.pi_Id = 0;
                         } else {
-                            currentStationInfo_Status.primaryInformation
-                                    .setContent(new StringBuffer().append(n).append("/").append(n2).toString());
+                            BapStringCompat.set(currentStationInfo_Status.primaryInformation, new StringBuffer().append(n).append("/").append(n2).toString());
                             currentStationInfo_Status.pi_Type = 65;
                             currentStationInfo_Status.pi_Id = n;
                         }
-                        currentStationInfo_Status.secondaryInformation.setContent("");
+                        BapStringCompat.set(currentStationInfo_Status.secondaryInformation, "");
                         currentStationInfo_Status.si_Type = 0;
-                        currentStationInfo_Status.tertiaryInformation.setContent("");
+                        BapStringCompat.set(currentStationInfo_Status.tertiaryInformation, "");
                         currentStationInfo_Status.ti_Type = currentStationInfo_Status.si_Type;
-                        currentStationInfo_Status.quaternaryInformation.setContent("");
+                        BapStringCompat.set(currentStationInfo_Status.quaternaryInformation, "");
                         currentStationInfo_Status.qi_Type = currentStationInfo_Status.ti_Type;
                         break block0;
                     }
@@ -311,7 +311,7 @@ public class CurrentStationInfo
             case 7:
             case 14: {
                 this.setStationInfoForMediaExternalDevice(currentStationInfo_Status);
-                currentStationInfo_Status.quaternaryInformation.setContent("");
+                BapStringCompat.set(currentStationInfo_Status.quaternaryInformation, "");
                 currentStationInfo_Status.qi_Type = 0;
                 break;
             }
@@ -366,21 +366,21 @@ public class CurrentStationInfo
                 n = 0;
             }
         }
-        currentStationInfo_Status.primaryInformation.setContent(string);
+        BapStringCompat.set(currentStationInfo_Status.primaryInformation, string);
         currentStationInfo_Status.pi_Type = n;
 
     }
 
     private void setStationInfoForExbox(CurrentStationInfo_Status currentStationInfo_Status) {
         ExboxCurrentStationInfo exboxCurrentStationInfo = this.getExboxService().getExboxCurrentStationInfo();
-        currentStationInfo_Status.primaryInformation.setContent(exboxCurrentStationInfo.getPrimaryInfo());
+        BapStringCompat.set(currentStationInfo_Status.primaryInformation, exboxCurrentStationInfo.getPrimaryInfo());
         currentStationInfo_Status.pi_Type = exboxCurrentStationInfo.getPrimaryInfoType();
         currentStationInfo_Status.pi_Id = exboxCurrentStationInfo.getPrimaryID();
-        currentStationInfo_Status.secondaryInformation.setContent(exboxCurrentStationInfo.getSecondaryInfo());
+        BapStringCompat.set(currentStationInfo_Status.secondaryInformation, exboxCurrentStationInfo.getSecondaryInfo());
         currentStationInfo_Status.si_Type = exboxCurrentStationInfo.getSecondaryInfoType();
-        currentStationInfo_Status.tertiaryInformation.setContent(exboxCurrentStationInfo.getTertiaryInfo());
+        BapStringCompat.set(currentStationInfo_Status.tertiaryInformation, exboxCurrentStationInfo.getTertiaryInfo());
         currentStationInfo_Status.ti_Type = exboxCurrentStationInfo.getTertiaryInfoType();
-        currentStationInfo_Status.quaternaryInformation.setContent(exboxCurrentStationInfo.getQuaternaryInfo());
+        BapStringCompat.set(currentStationInfo_Status.quaternaryInformation, exboxCurrentStationInfo.getQuaternaryInfo());
         currentStationInfo_Status.qi_Type = exboxCurrentStationInfo.getPrimaryInfoType();
     }
 
@@ -396,18 +396,18 @@ public class CurrentStationInfo
         String string3 = radioCurrentAMStationInfo.getCurrentAMStationInfoStationName();
         String string4 = this.formatFrequency(radioCurrentAMStationInfo.getCurrentAMStationInfoFrequency(), 1);
         if (string3.length() != 0 && !this.manualTuning) {
-            currentStationInfo_Status.primaryInformation.setContent(string3);
+            BapStringCompat.set(currentStationInfo_Status.primaryInformation, string3);
         } else {
-            currentStationInfo_Status.primaryInformation.setContent(string4);
+            BapStringCompat.set(currentStationInfo_Status.primaryInformation, string4);
         }
         boolean bl = radioService.isRadioSeekActive() || this.autostoreRunning;
         currentStationInfo_Status.pi_Type = bl ? 0 : 68;
         currentStationInfo_Status.pi_Id = 0;
         if (this.manualTuning && string3.length() != 0) {
-            currentStationInfo_Status.secondaryInformation.setContent(string3);
+            BapStringCompat.set(currentStationInfo_Status.secondaryInformation, string3);
             currentStationInfo_Status.si_Type = bl ? 0 : 68;
         } else {
-            currentStationInfo_Status.secondaryInformation.setContent("");
+            BapStringCompat.set(currentStationInfo_Status.secondaryInformation, "");
             currentStationInfo_Status.si_Type = 0;
         }
         if (!this.manualTuning && this.isRadioTextPlusEnabledAMFM()) {
@@ -417,9 +417,9 @@ public class CurrentStationInfo
             string2 = "";
             string = "";
         }
-        currentStationInfo_Status.tertiaryInformation.setContent(string2);
+        BapStringCompat.set(currentStationInfo_Status.tertiaryInformation, string2);
         currentStationInfo_Status.ti_Type = string2.length() != 0 ? 72 : 0;
-        currentStationInfo_Status.quaternaryInformation.setContent(string);
+        BapStringCompat.set(currentStationInfo_Status.quaternaryInformation, string);
         currentStationInfo_Status.qi_Type = string.length() != 0 ? 73 : 0;
     }
 
@@ -433,18 +433,18 @@ public class CurrentStationInfo
         String string4 = this.formatFrequency(radioCurrentFMStationInfo.getCurrentFMStationInfoFrequency(), 0);
         boolean bl2 = bl = !this.manualTuning && radioService.isPiCodingActivated();
         if (string3.length() != 0 && bl) {
-            currentStationInfo_Status.primaryInformation.setContent(string3);
+            BapStringCompat.set(currentStationInfo_Status.primaryInformation, string3);
         } else {
-            currentStationInfo_Status.primaryInformation.setContent(string4);
+            BapStringCompat.set(currentStationInfo_Status.primaryInformation, string4);
         }
         boolean bl3 = this.autostoreRunning || !bl;
         currentStationInfo_Status.pi_Type = bl3 ? 0 : 68;
         currentStationInfo_Status.pi_Id = 0;
         if (bl) {
-            currentStationInfo_Status.secondaryInformation.setContent(string4);
+            BapStringCompat.set(currentStationInfo_Status.secondaryInformation, string4);
             currentStationInfo_Status.si_Type = bl3 ? 0 : 67;
         } else {
-            currentStationInfo_Status.secondaryInformation.setContent(string3);
+            BapStringCompat.set(currentStationInfo_Status.secondaryInformation, string3);
             int n = currentStationInfo_Status.si_Type = string3.length() != 0 && !bl3 ? 68 : 0;
         }
         if (!this.manualTuning && this.isRadioTextPlusEnabledAMFM()) {
@@ -454,9 +454,9 @@ public class CurrentStationInfo
             string2 = "";
             string = "";
         }
-        currentStationInfo_Status.tertiaryInformation.setContent(string2);
+        BapStringCompat.set(currentStationInfo_Status.tertiaryInformation, string2);
         currentStationInfo_Status.ti_Type = string2.length() != 0 ? 72 : 0;
-        currentStationInfo_Status.quaternaryInformation.setContent(string);
+        BapStringCompat.set(currentStationInfo_Status.quaternaryInformation, string);
         currentStationInfo_Status.qi_Type = string.length() != 0 ? 73 : 0;
     }
 
@@ -503,16 +503,14 @@ public class CurrentStationInfo
             n = 70;
         }
         if ((!this.manualTuning || bl) && string.length() > 0) {
-            currentStationInfo_Status.primaryInformation.setContent(string);
+            BapStringCompat.set(currentStationInfo_Status.primaryInformation, string);
             currentStationInfo_Status.pi_Type = n;
         } else {
-            currentStationInfo_Status.primaryInformation
-                    .setContent(radioCurrentDABStationInfo.getCurrentDABStationFrequencyLabel());
+            BapStringCompat.set(currentStationInfo_Status.primaryInformation, radioCurrentDABStationInfo.getCurrentDABStationFrequencyLabel());
             currentStationInfo_Status.pi_Type = 0;
         }
         currentStationInfo_Status.pi_Id = this.currentAbsolutePosition;
-        currentStationInfo_Status.secondaryInformation
-                .setContent(radioCurrentDABStationInfo.getCurrentDABStationEnsembleName());
+        BapStringCompat.set(currentStationInfo_Status.secondaryInformation, radioCurrentDABStationInfo.getCurrentDABStationEnsembleName());
         currentStationInfo_Status.si_Type = currentStationInfo_Status.secondaryInformation.isEmptyString() ? 0 : 75;
         String string2 = "";
         String string3 = "";
@@ -524,13 +522,13 @@ public class CurrentStationInfo
             string3 = "";
         }
         if (!this.manualTuning || bl) {
-            currentStationInfo_Status.tertiaryInformation.setContent(string2);
+            BapStringCompat.set(currentStationInfo_Status.tertiaryInformation, string2);
             currentStationInfo_Status.ti_Type = string2.length() != 0 ? 72 : 0;
         } else {
-            currentStationInfo_Status.tertiaryInformation.setContent(string);
+            BapStringCompat.set(currentStationInfo_Status.tertiaryInformation, string);
             currentStationInfo_Status.ti_Type = n;
         }
-        currentStationInfo_Status.quaternaryInformation.setContent(string3);
+        BapStringCompat.set(currentStationInfo_Status.quaternaryInformation, string3);
         currentStationInfo_Status.qi_Type = string3.length() != 0 ? 73 : 0;
     }
 
@@ -546,18 +544,16 @@ public class CurrentStationInfo
         RadioCurrentChannelInfo radioCurrentChannelInfo = radioService.getCurrentChannelInfo();
         RadioCurrentSatRadioText radioCurrentSatRadioText = radioService.getCurrentSatRadioText();
         currentStationInfo_Status.channel_Id = radioCurrentChannelInfo.getCurrentSatChannelNumber();
-        currentStationInfo_Status.primaryInformation
-                .setContent(this.transmitALongDABProgrammStation ? radioCurrentChannelInfo.getCurrentSatChannelName()
+        BapStringCompat.set(currentStationInfo_Status.primaryInformation, this.transmitALongDABProgrammStation ? radioCurrentChannelInfo.getCurrentSatChannelName()
                         : radioCurrentChannelInfo.getCurrentSatChannelShortName());
         currentStationInfo_Status.pi_Type = 69;
         String string = radioCurrentSatRadioText.getCurrentSatRadioTextTitleName();
-        currentStationInfo_Status.secondaryInformation.setContent(string);
+        BapStringCompat.set(currentStationInfo_Status.secondaryInformation, string);
         currentStationInfo_Status.si_Type = string.length() != 0 ? 72 : 0;
         String string2 = radioCurrentSatRadioText.getCurrentSatRadioTextArtistName();
-        currentStationInfo_Status.tertiaryInformation.setContent(string2);
+        BapStringCompat.set(currentStationInfo_Status.tertiaryInformation, string2);
         currentStationInfo_Status.ti_Type = string2.length() != 0 ? 73 : 0;
-        currentStationInfo_Status.quaternaryInformation
-                .setContent(radioCurrentSatRadioText.getCurrentSatRadioTextCategoryName());
+        BapStringCompat.set(currentStationInfo_Status.quaternaryInformation, radioCurrentSatRadioText.getCurrentSatRadioTextCategoryName());
         currentStationInfo_Status.qi_Type = 16;
     }
 
@@ -589,11 +585,11 @@ public class CurrentStationInfo
         TvTunerService tvTunerService = this.getTvTunerService();
         switch (tvTunerService.getCurrentTvTunerSource()) {
             case 1: {
-                currentStationInfo_Status.primaryInformation.setContent("AV");
+                BapStringCompat.set(currentStationInfo_Status.primaryInformation, "AV");
                 break;
             }
             default: {
-                currentStationInfo_Status.primaryInformation.setContent(tvTunerService.getCurrentTvTunerStationName());
+                BapStringCompat.set(currentStationInfo_Status.primaryInformation, tvTunerService.getCurrentTvTunerStationName());
             }
         }
         currentStationInfo_Status.pi_Type = 71;

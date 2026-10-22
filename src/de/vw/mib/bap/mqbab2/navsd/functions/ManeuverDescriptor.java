@@ -3,6 +3,7 @@
  */
 package de.vw.mib.bap.mqbab2.navsd.functions;
 
+import de.macsinspace.vcaa.BapStringCompat;
 import de.vw.mib.bap.datatypes.BAPEntity;
 import de.vw.mib.bap.functions.BAPFunctionListener;
 import de.vw.mib.bap.functions.Property;
@@ -70,7 +71,7 @@ NavigationServiceListener {
         ManeuverDescriptor_Status$Maneuver_1 maneuverDescriptor_Status$Maneuver_1 = new ManeuverDescriptor_Status$Maneuver_1();
         maneuverDescriptor_Status$Maneuver_1.direction = n;
         maneuverDescriptor_Status$Maneuver_1.mainElement = this.mapToBAPMainElement(n2);
-        maneuverDescriptor_Status$Maneuver_1.sidestreets.setContent(string);
+        BapStringCompat.set(maneuverDescriptor_Status$Maneuver_1.sidestreets, string);
         maneuverDescriptor_Status$Maneuver_1.zLevelGuidance = n3;
         switch (maneuverDescriptor_Status$Maneuver_1.mainElement) {
             case 1: 
@@ -126,7 +127,7 @@ NavigationServiceListener {
             maneuverDescriptor_Status$Maneuver_1 = this.validateManeuverData(navigationManeuverDescriptorElement.getDirection(), navigationManeuverDescriptorElement.getMainelement(), navigationManeuverDescriptorElement.getSideStreets(), navigationManeuverDescriptorElement.getZLevelGuidance());
             maneuverDescriptor_Status.maneuver_1.direction = maneuverDescriptor_Status$Maneuver_1.direction;
             maneuverDescriptor_Status.maneuver_1.mainElement = maneuverDescriptor_Status$Maneuver_1.mainElement;
-            maneuverDescriptor_Status.maneuver_1.sidestreets.setContent(maneuverDescriptor_Status$Maneuver_1.sidestreets);
+            BapStringCompat.set(maneuverDescriptor_Status.maneuver_1.sidestreets, maneuverDescriptor_Status$Maneuver_1.sidestreets);
             maneuverDescriptor_Status.maneuver_1.zLevelGuidance = maneuverDescriptor_Status$Maneuver_1.zLevelGuidance;
         }
         if (n > 1) {
@@ -134,7 +135,7 @@ NavigationServiceListener {
             maneuverDescriptor_Status$Maneuver_1 = this.validateManeuverData(navigationManeuverDescriptorElement.getDirection(), navigationManeuverDescriptorElement.getMainelement(), navigationManeuverDescriptorElement.getSideStreets(), navigationManeuverDescriptorElement.getZLevelGuidance());
             maneuverDescriptor_Status.maneuver_2.direction = maneuverDescriptor_Status$Maneuver_1.direction;
             maneuverDescriptor_Status.maneuver_2.mainElement = maneuverDescriptor_Status$Maneuver_1.mainElement;
-            maneuverDescriptor_Status.maneuver_2.sidestreets.setContent(maneuverDescriptor_Status$Maneuver_1.sidestreets);
+            BapStringCompat.set(maneuverDescriptor_Status.maneuver_2.sidestreets, maneuverDescriptor_Status$Maneuver_1.sidestreets);
             maneuverDescriptor_Status.maneuver_2.zLevelGuidance = maneuverDescriptor_Status$Maneuver_1.zLevelGuidance;
         }
         if (n > 2) {
@@ -142,7 +143,7 @@ NavigationServiceListener {
             maneuverDescriptor_Status$Maneuver_1 = this.validateManeuverData(navigationManeuverDescriptorElement.getDirection(), navigationManeuverDescriptorElement.getMainelement(), navigationManeuverDescriptorElement.getSideStreets(), navigationManeuverDescriptorElement.getZLevelGuidance());
             maneuverDescriptor_Status.maneuver_3.direction = maneuverDescriptor_Status$Maneuver_1.direction;
             maneuverDescriptor_Status.maneuver_3.mainElement = maneuverDescriptor_Status$Maneuver_1.mainElement;
-            maneuverDescriptor_Status.maneuver_3.sidestreets.setContent(maneuverDescriptor_Status$Maneuver_1.sidestreets);
+            BapStringCompat.set(maneuverDescriptor_Status.maneuver_3.sidestreets, maneuverDescriptor_Status$Maneuver_1.sidestreets);
             maneuverDescriptor_Status.maneuver_3.zLevelGuidance = maneuverDescriptor_Status$Maneuver_1.zLevelGuidance;
         }
     }
