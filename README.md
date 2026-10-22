@@ -13,6 +13,9 @@
 > - The jar also writes its log to `/tmp/VCAndroidAuto.log` (1 MB cap), because the
 >   interface's console output is not saved anywhere.
 > - Missing `break`s in `NavigationHandler.navigationFocus`.
+> - One jar for VW and SEAT. `BAPString.setContent` returns the string on VW firmware
+>   and nothing on SEAT; a jar compiled against one lost music and arrows on the other.
+>   The jar now looks the method up at run time.
 >
 > Original notice from adi961: *"Unfortunately I am not able to maintain this project
 > anymore since I dont own the car anymore."*
