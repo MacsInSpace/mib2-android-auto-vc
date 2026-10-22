@@ -1,6 +1,21 @@
-> [!WARNING]
-> Unfortunately I am not able to maintain this project anymore since I dont own the car anymore.
-> If someone is willing to take over the project feel free to contact me
+> [!NOTE]
+> **Maintained fork.** adi961 no longer owns an MQB car and stopped maintaining
+> [the original](https://github.com/adi961/mib2-android-auto-vc). This fork carries
+> fixes found while using the jar alongside
+> [MIB Cluster Map](https://github.com/MacsInSpace/mib-cluster-map), which bundles it
+> as its turn-arrows mode. Report problems in
+> [this fork's issues](https://github.com/MacsInSpace/mib2-android-auto-vc/issues).
+>
+> Changes since adi961's 0.1.4:
+> - The arrows come back after the car sleeps. After the Android Auto service
+>   registers again, the jar resets navigation focus to the car; if the phone then
+>   sends turn data without asking for focus again, focus is handed back to it.
+> - The jar also writes its log to `/tmp/VCAndroidAuto.log` (1 MB cap), because the
+>   interface's console output is not saved anywhere.
+> - Missing `break`s in `NavigationHandler.navigationFocus`.
+>
+> Original notice from adi961: *"Unfortunately I am not able to maintain this project
+> anymore since I dont own the car anymore."*
 
 # MIB2 High Android Auto Virtual Cockpit
 
