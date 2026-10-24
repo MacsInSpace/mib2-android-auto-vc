@@ -28,42 +28,55 @@ public class MIBLogger {
         if (instance != null) {
             return instance;
         }
-        instance = new MIBLogger(configFilePaths);
+        instance = new MIBLogger();
         return instance;
     }
 
-    // Either card slot; Windows users often end up with MIBLogger.txt
-    static final String[] configFilePaths = {
-        "/fs/sda0/MIBLogger", "/fs/sda0/MIBLogger.txt",
-        "/fs/sdb0/MIBLogger", "/fs/sdb0/MIBLogger.txt"
-    };
+    // Either card slot, any name starting with MIBLogger (MIBLogger,
+    // MIBLogger.txt, MIBLogger.text ...)
+    static final String[] cardDirs = { "/fs/sda0", "/fs/sdb0" };
 
     private boolean configFound = false;
 
-    public MIBLogger(String configFilePath) {
-        this(new String[] { configFilePath });
-    }
-
-    public MIBLogger(String[] configFilePaths) {
-        for (int i = 0; i < configFilePaths.length && !configFound; i++) {
-            readConfig(configFilePaths[i]);
-        }
+    public MIBLogger() {
+        findConfig();
         if (!configFound) {
-            this.info("No config file found at " + configFilePaths[0]);
+            this.info("No config file MIBLogger* found on the SD card");
         }
         this.info("Starting with log level of " + logLevel);
     }
 
-    // lsd starts before the SD card is mounted, so look again later
+    public MIBLogger(String configFilePath) {
+        readConfig(configFilePath);
+        this.info("Starting with log level of " + logLevel);
+    }
+
+    // lsd starts about 14 s after boot; look again once Android Auto
+    // connects in case the card was not readable yet
     public void recheckConfig() {
         if (configFound) {
             return;
         }
-        for (int i = 0; i < configFilePaths.length && !configFound; i++) {
-            readConfig(configFilePaths[i]);
-        }
+        findConfig();
         if (configFound) {
             this.info("Config file found later, log level now " + logLevel);
+        }
+    }
+
+    private void findConfig() {
+        for (int d = 0; d < cardDirs.length && !configFound; d++) {
+            String[] names = new File(cardDirs[d]).list();
+            if (names == null) {
+                continue;
+            }
+            for (int i = 0; i < names.length && !configFound; i++) {
+                if (names[i].toLowerCase().startsWith("miblogger")) {
+                    readConfig(cardDirs[d] + "/" + names[i]);
+                    if (configFound) {
+                        this.info("Config file " + cardDirs[d] + "/" + names[i]);
+                    }
+                }
+            }
         }
     }
 
