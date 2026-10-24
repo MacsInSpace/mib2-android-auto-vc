@@ -148,7 +148,7 @@ public class AndroidAutoTarget
         this.aslHandler.initTimerHandler(this.timerHandler);
         this.requestHandler.initExBoxNavServices(this.exboxGuidanceListenerImpl);
 
-        MIBLogger.getInstance().info("VCAndroidAuto mod available (MacsInSpace fork 0.1.5-beta2)");
+        MIBLogger.getInstance().info("VCAndroidAuto mod available (MacsInSpace fork 0.1.5-beta3)");
     }
 
 
@@ -192,6 +192,7 @@ public class AndroidAutoTarget
         this.dsihandler.handleDsiAndroidAuto2NavFocusRequestNotification(Constants.NAVFOCUS_NATIVE, 1);
         this.navigationHandler.navigationFocus(Constants.NAVFOCUS_NATIVE);
         this.navFocusResetByRegistration = true;
+        MIBLogger.getInstance().recheckConfig();
         MIBLogger.getInstance().info("DSI registered, nav focus reset to native");
     }
 

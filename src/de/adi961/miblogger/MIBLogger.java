@@ -28,15 +28,52 @@ public class MIBLogger {
         if (instance != null) {
             return instance;
         }
-        instance = new MIBLogger("/fs/sda0/MIBLogger");
+        instance = new MIBLogger(configFilePaths);
         return instance;
     }
 
+    // Either card slot; Windows users often end up with MIBLogger.txt
+    static final String[] configFilePaths = {
+        "/fs/sda0/MIBLogger", "/fs/sda0/MIBLogger.txt",
+        "/fs/sdb0/MIBLogger", "/fs/sdb0/MIBLogger.txt"
+    };
+
+    private boolean configFound = false;
+
     public MIBLogger(String configFilePath) {
+        this(new String[] { configFilePath });
+    }
+
+    public MIBLogger(String[] configFilePaths) {
+        for (int i = 0; i < configFilePaths.length && !configFound; i++) {
+            readConfig(configFilePaths[i]);
+        }
+        if (!configFound) {
+            this.info("No config file found at " + configFilePaths[0]);
+        }
+        this.info("Starting with log level of " + logLevel);
+    }
+
+    // lsd starts before the SD card is mounted, so look again later
+    public void recheckConfig() {
+        if (configFound) {
+            return;
+        }
+        for (int i = 0; i < configFilePaths.length && !configFound; i++) {
+            readConfig(configFilePaths[i]);
+        }
+        if (configFound) {
+            this.info("Config file found later, log level now " + logLevel);
+        }
+    }
+
+    private void readConfig(String configFilePath) {
         try {
             BufferedReader br = new BufferedReader(new FileReader(configFilePath));
             String line = br.readLine();
+            configFound = true;
             if (line != null) {
+                line = lettersOnly(line);
                 if (line.equalsIgnoreCase("TRACE")) {
                     logLevel = TRACE;
                 } else if (line.equalsIgnoreCase("DEBUG")) {
@@ -51,11 +88,20 @@ public class MIBLogger {
             }
             br.close();
         } catch (IOException e) {
-            this.info("No config file found at " + configFilePath);
-            System.out.println("Error reading the log configuration file.");
+            // not on this path
         }
+    }
 
-        this.info("Starting with log level of " + logLevel);
+    // drops spaces, line ends and a Notepad byte-order mark
+    private static String lettersOnly(String line) {
+        StringBuffer sb = new StringBuffer();
+        for (int i = 0; i < line.length(); i++) {
+            char c = line.charAt(i);
+            if ((c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z')) {
+                sb.append(c);
+            }
+        }
+        return sb.toString();
     }
 
     public void trace(String message) {
