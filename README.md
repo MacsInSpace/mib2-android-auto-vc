@@ -16,6 +16,9 @@
 > - One jar for VW and SEAT. `BAPString.setContent` returns the string on VW firmware
 >   and nothing on SEAT; a jar compiled against one lost music and arrows on the other.
 >   The jar now looks the method up at run time.
+>- The log level file is found as any file named `MIBLogger*` (`MIBLogger`,
+>   `MIBLogger.txt`) in the top folder of either SD card, containing `DEBUG` or
+>   `TRACE`. It is looked for again when Android Auto connects.
 >
 > Original notice from adi961: *"Unfortunately I am not able to maintain this project
 > anymore since I dont own the car anymore."*
