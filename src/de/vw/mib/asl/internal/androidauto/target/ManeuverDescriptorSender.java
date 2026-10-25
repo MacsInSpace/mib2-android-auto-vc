@@ -2,12 +2,17 @@ package de.vw.mib.asl.internal.androidauto.target;
 
 import de.adi961.miblogger.MIBLogger;
 import de.vw.mib.asl.framework.internal.framework.GenericCollector;
+import de.vw.mib.bap.mqbab2.common.api.APIFactory;
+import de.vw.mib.bap.mqbab2.common.api.navigation.NavigationASLDataAdapter;
 import generated.de.vw.mib.asl.internal.ListManager;
 import org.dsi.ifc.navigation.BapManeuverDescriptor;
 
 import java.util.Vector;
 
 public class ManeuverDescriptorSender {
+
+    // The BAP ManeuverDescriptor function (cluster pictogram) listens on this.
+    private static final int MANEUVER_DESCRIPTOR_DATAPOOL_ID = 751;
 
     private BapManeuverDescriptor lastManeuverDescriptor;
 
@@ -23,6 +28,24 @@ public class ManeuverDescriptorSender {
 
         sendBapManeuverDescriptor(new BapManeuverDescriptor[]{bapManeuverDescriptor});
         this.lastManeuverDescriptor = bapManeuverDescriptor;
+        notifyManeuverChanged();
+    }
+
+    /*
+     * Updating list 751 does not tell the BAP side anything. The cluster's
+     * ManeuverDescriptor function listens on datapool 751, so without this it
+     * keeps showing the pictogram it computed last, and only a car route's own
+     * datapool traffic makes it look again (issue #4: frozen pictogram).
+     */
+    private void notifyManeuverChanged() {
+        try {
+            NavigationASLDataAdapter adapter =
+                (NavigationASLDataAdapter) APIFactory.getAPIFactory().getNavigationService();
+            adapter.datapoolValueChanged(MANEUVER_DESCRIPTOR_DATAPOOL_ID);
+            MIBLogger.getInstance().debug("maneuver sent, datapool 751 notified");
+        } catch (Throwable t) {
+            MIBLogger.getInstance().error("could not notify datapool 751: " + t);
+        }
     }
 
     private void sendBapManeuverDescriptor(BapManeuverDescriptor[] bapManeuverDescriptorArray) {

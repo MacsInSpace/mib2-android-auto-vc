@@ -19,6 +19,10 @@
 >- The log level file is found as any file named `MIBLogger*` (`MIBLogger`,
 >   `MIBLogger.txt`) in the top folder of either SD card, containing `DEBUG` or
 >   `TRACE`. It is looked for again when Android Auto connects.
+>- The cluster is told when the turn pictogram changes. The jar wrote each new
+>   pictogram into navigation list 751 but never signalled that datapool, so the
+>   cluster kept drawing the one it had computed last and the pictogram froze
+>   until the car's own navigation generated that traffic.
 >
 > Original notice from adi961: *"Unfortunately I am not able to maintain this project
 > anymore since I dont own the car anymore."*

@@ -148,7 +148,7 @@ public class AndroidAutoTarget
         this.aslHandler.initTimerHandler(this.timerHandler);
         this.requestHandler.initExBoxNavServices(this.exboxGuidanceListenerImpl);
 
-        MIBLogger.getInstance().info("VCAndroidAuto mod available (MacsInSpace fork 0.1.5-beta3)");
+        MIBLogger.getInstance().info("VCAndroidAuto mod available (MacsInSpace fork 0.1.5-beta4)");
     }
 
 
