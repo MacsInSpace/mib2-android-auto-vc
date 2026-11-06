@@ -4,6 +4,7 @@
 package de.vw.mib.bap.mqbab2.navsd.functions;
 
 import de.adi961.miblogger.MIBLogger;
+import de.macsinspace.vcaa.Variant;
 import de.vw.mib.bap.datatypes.BAPEntity;
 import de.vw.mib.bap.functions.BAPFunctionListener;
 import de.vw.mib.bap.functions.Property;
@@ -144,12 +145,16 @@ ConfigurationServiceListener {
     }
 
     private void setCurrentRGType(ActiveRgType_Status activeRgType_Status) {
-        if (this.getAndroidAutoService().isAndroidAutoRouteGuidanceActive()) {
+        if (!Variant.KEEP_MAP_VIEW && this.getAndroidAutoService().isAndroidAutoRouteGuidanceActive()) {
+            // 0 = the cockpit's arrow view. On VW it replaces the phone's map.
             activeRgType_Status.rgtype = 0;
             return;
         }
         activeRgType_Status.rgtype = !this.getConfigurationService().isMapSwitchingFeatureSelected() ? (this.getNavigationService().getKombiMapStatus() != 0 ? 3 : this.getCurrentRgType()) : this.getCurrentRgType();
         //activeRgType_Status.rgtype = 0;
+        if (Variant.KEEP_MAP_VIEW) {
+            MIBLogger.getInstance().info("ActiveRgType " + activeRgType_Status.rgtype + " (view left to the cockpit)");
+        }
     }
 
     private void sendRgType(ActiveRgType_Status activeRgType_Status) {

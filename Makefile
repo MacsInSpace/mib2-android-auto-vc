@@ -78,6 +78,21 @@ music: jdk
 	@$(JAVAC) -source 1.2 -target 1.2 -cp $(CLASSPATH) -d $(MUSIC_CLASSES_DIR) `find $(MUSIC_SRC_DIR) -name '*.java'`
 	@$(JAR) cvf $(OUT_DIR)/$(MUSIC_JAR_FILE) -C $(MUSIC_CLASSES_DIR) .
 
+TURNS_SRC_DIR = $(BUILD_DIR)/turns-src
+TURNS_CLASSES_DIR = $(BUILD_DIR)/turns-classes
+TURNS_JAR_FILE = VCAndroidAutoTurns.jar
+
+.PHONY: turns
+turns: jdk
+	@echo "Compiling the turns jar (turn data, cockpit view left to stock)..."
+	@rm -rf $(TURNS_SRC_DIR) $(TURNS_CLASSES_DIR)
+	@mkdir -p $(TURNS_SRC_DIR) $(TURNS_CLASSES_DIR) $(OUT_DIR)
+	@cp -R $(SRC_DIR)/. $(TURNS_SRC_DIR)/
+	@sed -i 's/KEEP_MAP_VIEW = false;/KEEP_MAP_VIEW = true;/' $(TURNS_SRC_DIR)/de/macsinspace/vcaa/Variant.java
+	@grep -q 'KEEP_MAP_VIEW = true;' $(TURNS_SRC_DIR)/de/macsinspace/vcaa/Variant.java
+	@$(JAVAC) -source 1.2 -target 1.2 -cp $(CLASSPATH) -d $(TURNS_CLASSES_DIR) `find $(TURNS_SRC_DIR) -name '*.java'`
+	@$(JAR) cvf $(OUT_DIR)/$(TURNS_JAR_FILE) -C $(TURNS_CLASSES_DIR) .
+
 # Clean the compiled files and jar
 .PHONY: clean
 clean:
