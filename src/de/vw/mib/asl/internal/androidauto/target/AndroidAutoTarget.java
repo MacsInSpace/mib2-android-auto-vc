@@ -4,6 +4,7 @@
 package de.vw.mib.asl.internal.androidauto.target;
 
 import de.adi961.miblogger.MIBLogger;
+import de.macsinspace.vcaa.Variant;
 import de.vw.mib.asl.api.androidauto.ASLAndroidAutoFactory;
 import de.vw.mib.asl.api.exboxm.ASLExboxmFactory;
 import de.vw.mib.asl.api.exboxm.guidance.ExboxGuidanceManager;
@@ -148,7 +149,8 @@ public class AndroidAutoTarget
         this.aslHandler.initTimerHandler(this.timerHandler);
         this.requestHandler.initExBoxNavServices(this.exboxGuidanceListenerImpl);
 
-        MIBLogger.getInstance().info("VCAndroidAuto mod available (MacsInSpace fork 0.1.5-beta4)");
+        MIBLogger.getInstance().info("VCAndroidAuto mod available (MacsInSpace fork 0.1.5-beta4"
+                + (Variant.MUSIC_ONLY ? ", music only)" : ")"));
     }
 
 
@@ -189,10 +191,15 @@ public class AndroidAutoTarget
         }
         this.dsiAndroidAuto2.setNotification(this.DSI_ANDROIDAUTO2_ATTR, this.dsiAndroidAuto2Listener);
 
+        MIBLogger.getInstance().recheckConfig();
+        if (Variant.MUSIC_ONLY) {
+            // Navigation stays with the stock code: no focus reset, no turn data.
+            MIBLogger.getInstance().info("DSI registered (music only, nav focus left to stock)");
+            return;
+        }
         this.dsihandler.handleDsiAndroidAuto2NavFocusRequestNotification(Constants.NAVFOCUS_NATIVE, 1);
         this.navigationHandler.navigationFocus(Constants.NAVFOCUS_NATIVE);
         this.navFocusResetByRegistration = true;
-        MIBLogger.getInstance().recheckConfig();
         MIBLogger.getInstance().info("DSI registered, nav focus reset to native");
     }
 
@@ -378,7 +385,7 @@ public class AndroidAutoTarget
         }
         this.dsihandler.handleDsiAndroidAuto2NavFocusRequestNotification(focus, valid);
 
-        if (valid == 1) {
+        if (valid == 1 && !Variant.MUSIC_ONLY) {
             this.navFocusResetByRegistration = false;
             MIBLogger.getInstance().info("nav focus from phone: " + focus);
             this.navigationHandler.navigationFocus(focus);
@@ -491,7 +498,7 @@ public class AndroidAutoTarget
             this.trace("TargetAndroidAuto2DSI#updateNavigationNextTurnEvent called");
         }
 
-        if (valid == 1) {
+        if (valid == 1 && !Variant.MUSIC_ONLY) {
             this.restoreProjectedFocusIfReset();
             this.navigationHandler.handleNextTurnEvent(road, turnSide, event, turnAngle, turnNumber);
         }
@@ -503,7 +510,7 @@ public class AndroidAutoTarget
             this.trace("TargetAndroidAuto2DSI#updateNavigationNextTurnDistance called");
         }
 
-        if (valid == 1) {
+        if (valid == 1 && !Variant.MUSIC_ONLY) {
             this.restoreProjectedFocusIfReset();
             this.navigationHandler.handleUpdateNextTurnDistanceEvent(distanceMeters, timeSeconds);
         }

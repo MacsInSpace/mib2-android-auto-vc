@@ -58,6 +58,26 @@ jar: compile
 	@$(JAR) cvf $(OUT_DIR)/$(OUT_JAR_FILE) -C $(CLASSES_DIR) .
 
 
+# Music-only jar: the track playing on the cockpit's media screen, nothing
+# else. Built from a copy of the sources with Variant.MUSIC_ONLY set and the
+# navsd overrides left out, so the cockpit's navigation stays stock (for VW
+# units with the phone's map on the cockpit, mib-cluster-map).
+MUSIC_SRC_DIR = $(BUILD_DIR)/music-src
+MUSIC_CLASSES_DIR = $(BUILD_DIR)/music-classes
+MUSIC_JAR_FILE = VCAndroidAutoMusic.jar
+
+.PHONY: music
+music: jdk
+	@echo "Compiling the music-only jar..."
+	@rm -rf $(MUSIC_SRC_DIR) $(MUSIC_CLASSES_DIR)
+	@mkdir -p $(MUSIC_SRC_DIR) $(MUSIC_CLASSES_DIR) $(OUT_DIR)
+	@cp -R $(SRC_DIR)/. $(MUSIC_SRC_DIR)/
+	@rm -rf $(MUSIC_SRC_DIR)/de/vw/mib/bap/mqbab2/navsd
+	@sed -i 's/MUSIC_ONLY = false;/MUSIC_ONLY = true;/' $(MUSIC_SRC_DIR)/de/macsinspace/vcaa/Variant.java
+	@grep -q 'MUSIC_ONLY = true;' $(MUSIC_SRC_DIR)/de/macsinspace/vcaa/Variant.java
+	@$(JAVAC) -source 1.2 -target 1.2 -cp $(CLASSPATH) -d $(MUSIC_CLASSES_DIR) `find $(MUSIC_SRC_DIR) -name '*.java'`
+	@$(JAR) cvf $(OUT_DIR)/$(MUSIC_JAR_FILE) -C $(MUSIC_CLASSES_DIR) .
+
 # Clean the compiled files and jar
 .PHONY: clean
 clean:
