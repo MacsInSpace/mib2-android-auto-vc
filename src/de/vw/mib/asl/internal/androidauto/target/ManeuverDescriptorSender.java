@@ -20,6 +20,21 @@ public class ManeuverDescriptorSender {
         lastManeuverDescriptor = null;
     }
 
+    /*
+     * Route over: send "no symbol" (main element 0) and tell the BAP side, or
+     * the cockpit keeps drawing the last pictogram beside the map.
+     */
+    public void clear() {
+        lastManeuverDescriptor = null;
+        try {
+            sendBapManeuverDescriptor(null);
+            notifyManeuverChanged();
+            MIBLogger.getInstance().info("route ended: cockpit pictogram cleared");
+        } catch (Throwable t) {
+            MIBLogger.getInstance().error("could not clear the pictogram: " + t);
+        }
+    }
+
     public void send(BapManeuverDescriptor bapManeuverDescriptor) {
         if (lastManeuverDescriptor != null && lastManeuverDescriptor.toString().equals(bapManeuverDescriptor.toString())) {
             MIBLogger.getInstance().debug("same maneuver descriptor. Not sending.");

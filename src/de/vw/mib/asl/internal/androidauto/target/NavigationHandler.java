@@ -38,7 +38,12 @@ public class NavigationHandler {
     private void navStopped() {
         nextTurn = null;
         ASLNavBAPFactory.getNavBAPApi().updateBapTurnToInfo("", "");
-        maneuverDescriptorSender.reset();
+        try {
+            ASLNavBAPFactory.getNavBAPApi().updateBapDistanceToNextManeuver(-1, 0, false, 0);
+        } catch (Throwable t) {
+            MIBLogger.getInstance().error("could not clear the distance: " + t);
+        }
+        maneuverDescriptorSender.clear();
     }
 
     private void navStarted() {
