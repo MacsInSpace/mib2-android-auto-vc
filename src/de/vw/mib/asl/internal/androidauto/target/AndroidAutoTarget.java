@@ -4,6 +4,7 @@
 package de.vw.mib.asl.internal.androidauto.target;
 
 import de.adi961.miblogger.MIBLogger;
+import de.macsinspace.vcaa.CarPlayNowPlaying;
 import de.macsinspace.vcaa.Variant;
 import de.vw.mib.asl.api.androidauto.ASLAndroidAutoFactory;
 import de.vw.mib.asl.api.exboxm.ASLExboxmFactory;
@@ -244,6 +245,7 @@ public class AndroidAutoTarget
         if (this.exboxGuidanceListenerImpl != null) {
             this.exboxGuidanceListenerImpl.startup();
         }
+        CarPlayNowPlaying.start(this);
     }
 
     public void shutdown() {
@@ -261,6 +263,7 @@ public class AndroidAutoTarget
         if (this.exboxGuidanceListenerImpl != null) {
             this.exboxGuidanceListenerImpl.shutdown();
         }
+        CarPlayNowPlaying.stop();
     }
 
     // @Override

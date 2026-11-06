@@ -4,6 +4,7 @@
 package de.vw.mib.bap.mqbab2.audiosd.functions;
 
 import de.macsinspace.vcaa.BapStringCompat;
+import de.macsinspace.vcaa.CarPlayNowPlaying;
 import de.adi961.miblogger.MIBLogger;
 import de.vw.mib.bap.array.timer.Timer;
 import de.vw.mib.bap.array.timer.TimerNotifier;
@@ -38,6 +39,7 @@ import de.vw.mib.bap.mqbab2.common.api.stages.Function;
 import de.vw.mib.bap.mqbab2.common.api.tvtuner.TvTunerService;
 import de.vw.mib.bap.mqbab2.common.api.tvtuner.TvTunerServiceListener;
 import de.vw.mib.bap.mqbab2.generated.audiosd.serializer.CurrentStationInfo_Status;
+import de.vw.mib.genericevents.ThreadSwitchingTarget;
 
 public class CurrentStationInfo
         extends Function
@@ -85,15 +87,63 @@ public class CurrentStationInfo
     public static String AndroidAutoArtist = "";
     public static String AndroidAutoAlbum = "";
 
+    private static final Object REFRESH_LOCK = new Object();
+    private static ThreadSwitchingTarget bapTask;
+    private static boolean refreshQueued;
+    private int lastConnectionType = -1;
+
     public static void refresh() {
         if (instance != null) {
             instance.process(-1);
         }
     }
 
+    /** Recompute on this function's own BAP thread; safe to call from any thread. */
+    public static void refreshLater() {
+        final ThreadSwitchingTarget task;
+        synchronized (REFRESH_LOCK) {
+            if (refreshQueued || instance == null || bapTask == null) {
+                return;
+            }
+            refreshQueued = true;
+            task = bapTask;
+        }
+        try {
+            task.enqueue(new Runnable() {
+                public void run() {
+                    CurrentStationInfo current;
+                    synchronized (REFRESH_LOCK) {
+                        refreshQueued = false;
+                        current = instance;
+                    }
+                    if (current != null) {
+                        try {
+                            current.process(-1);
+                        } catch (Throwable t) {
+                            MIBLogger.getInstance().info("CurrentStationInfo refresh failed " + t);
+                        }
+                    }
+                }
+            });
+        } catch (Throwable t) {
+            synchronized (REFRESH_LOCK) {
+                refreshQueued = false;
+            }
+            MIBLogger.getInstance().info("CurrentStationInfo enqueue failed " + t);
+        }
+    }
+
     // @Override
     public BAPEntity init(BAPStageInitializer bAPStageInitializer) {
         instance = this;
+        try {
+            ThreadSwitchingTarget task = this.getThreadSwitchingService();
+            synchronized (REFRESH_LOCK) {
+                bapTask = task;
+            }
+        } catch (Throwable t) {
+            MIBLogger.getInstance().info("CurrentStationInfo: no BAP task " + t);
+        }
         this.getRadioService().addRadioServiceListener(this, RADIO_LISTENER_IDS);
         this.getMediaService().addMediaServiceListener(this, MEDIA_LISTENER_IDS);
         this.getTvTunerService().addTvTunerServiceListener(this, TV_TUNER_LISTENER_IDS);
@@ -341,13 +391,38 @@ public class CurrentStationInfo
         String string;
 
 
-        switch (this.getSmartphoneIntegrationService().getSmarphoneIntegrationActiveConnectionType()) {
+        int connectionType = this.getSmartphoneIntegrationService().getSmarphoneIntegrationActiveConnectionType();
+        boolean carPlayJustConnected = connectionType == 2 && this.lastConnectionType != 2;
+        this.lastConnectionType = connectionType;
+        switch (connectionType) {
             case 1: {
                 string = "MirrorLink\u2122";
                 n = 72;
                 break;
             }
-            case 2: {
+            case 2: { // Apple CarPlay: the track if the iPhone sent one
+                if (carPlayJustConnected) {
+                    CarPlayNowPlaying.resubscribe();
+                }
+                String[] track = CarPlayNowPlaying.snapshot();
+                if (track != null) {
+                    BapStringCompat.set(currentStationInfo_Status.primaryInformation, track[0]);
+                    currentStationInfo_Status.pi_Type = 72;
+                    currentStationInfo_Status.pi_Id = 0;
+                    BapStringCompat.set(currentStationInfo_Status.secondaryInformation, track[1]);
+                    currentStationInfo_Status.si_Type = track[1].length() != 0 ? 73 : 0;
+                    BapStringCompat.set(currentStationInfo_Status.tertiaryInformation, track[2]);
+                    currentStationInfo_Status.ti_Type = track[2].length() != 0 ? 74 : 0;
+                    BapStringCompat.set(currentStationInfo_Status.quaternaryInformation, "");
+                    currentStationInfo_Status.qi_Type = 0;
+                    return;
+                }
+                BapStringCompat.set(currentStationInfo_Status.secondaryInformation, "");
+                currentStationInfo_Status.si_Type = 0;
+                BapStringCompat.set(currentStationInfo_Status.tertiaryInformation, "");
+                currentStationInfo_Status.ti_Type = 0;
+                BapStringCompat.set(currentStationInfo_Status.quaternaryInformation, "");
+                currentStationInfo_Status.qi_Type = 0;
                 string = "Apple CarPlay";
                 n = 72;
                 break;
@@ -692,6 +767,12 @@ public class CurrentStationInfo
 
     // @Override
     public void uninitialize() {
+        synchronized (REFRESH_LOCK) {
+            if (instance == this) {
+                instance = null;
+                bapTask = null;
+            }
+        }
         this.timer.stop();
         this.getSuppressionTimer().stop();
         this.getRadioService().removeRadioServiceListener(this, RADIO_LISTENER_IDS);
