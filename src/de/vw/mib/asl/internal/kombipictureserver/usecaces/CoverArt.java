@@ -10,6 +10,7 @@ import de.vw.mib.asl.internal.kombipictureserver.common.api.media.asl.MediaCover
 import de.vw.mib.asl.internal.kombipictureserver.common.api.media.asl.MediaCoverArtService;
 import de.vw.mib.asl.internal.kombipictureserver.common.util.KombiPictureServerUtil;
 import de.vw.mib.asl.internal.kombipictureserver.usecaces.PictureServerUseCase;
+import de.macsinspace.vcaa.CarPlayNowPlaying;
 import org.dsi.ifc.base.DSIBase;
 import org.dsi.ifc.base.DSIListener;
 import org.dsi.ifc.global.ResourceLocator;
@@ -27,6 +28,8 @@ BapAudioSdDelegate {
     private int _bapActiveSourceType;
     private ResourceLocator _mediaCoverArtResourceLocator;
     private boolean isWaitingForIsCoverValid;
+    private static CoverArt current;
+    private ResourceLocator _sentCarPlayCover;
     private static /*final*/ int BAP_AUDIO_SD_INVALID_HANDLE;
     static /* synthetic */ Class class$org$dsi$ifc$kombipictureserver$DSIKombiPictureServer;
     static /* synthetic */ Class class$org$dsi$ifc$kombipictureserver$DSIKombiPictureServerListener;
@@ -103,8 +106,12 @@ BapAudioSdDelegate {
             this._updateCoverArt(true);
         } else {
             boolean bl3;
-            boolean bl4 = bl3 = n == 0 && n2 == this.getBapActiveSourceType() && l == (long)this.getBapAudioSdService().getCurrentStationHandle().getCurrentStationHandleCurrentStationHandle() && this.getMediaCoverArtService().isCoverValid();
-            if (bl3) {
+            boolean isCurrent = n == 0 && n2 == this.getBapActiveSourceType() && l == (long)this.getBapAudioSdService().getCurrentStationHandle().getCurrentStationHandleCurrentStationHandle();
+            ResourceLocator cp = isCurrent ? this.carPlayCover() : null;
+            boolean bl4 = bl3 = isCurrent && this.getMediaCoverArtService().isCoverValid();
+            if (cp != null) {
+                this._transmitCoverArt(cp);
+            } else if (bl3) {
                 this._transmitCurrentCoverArt();
             } else {
                 this._transmitCoverArt(l, n, n2, 2, null);
@@ -155,9 +162,48 @@ BapAudioSdDelegate {
         this._transmitCoverArt(this.getMediaCoverArtService().getCoverArt());
     }
 
+    /*
+     * CarPlay: the stock media service has no cover for it, so the cockpit
+     * showed a placeholder. CarPlayNowPlaying subscribes to the iPhone's cover
+     * and calls this; the cover goes out the same way a media cover does, but
+     * only while the media service has none of its own.
+     */
+    public static void refreshFromCarPlay() {
+        CoverArt c = current;
+        if (c == null) {
+            return;
+        }
+        try {
+            c._updateCoverArt(true);
+        } catch (Throwable t) {
+            MIBLogger.getInstance().error("CarPlay cover: refresh failed " + t);
+        }
+    }
+
+    private ResourceLocator carPlayCover() {
+        try {
+            if (this.getMediaCoverArtService().isCoverValid()) {
+                return null;
+            }
+        } catch (Throwable t) {
+            return null;
+        }
+        return CarPlayNowPlaying.coverArt();
+    }
+
     private void _updateCoverArt(boolean bl) {
         MIBLogger.getInstance().trace("bl: "+ bl + " activeSource: " + this.getBapActiveSourceType() + " isCoverValid: " + this.getMediaCoverArtService().isCoverValid());
         if (CoverArt._isActiveSourceSupportsCoverArt(this.getBapActiveSourceType())) {
+            ResourceLocator cp = this.carPlayCover();
+            if (cp != null) {
+                if (bl || this._sentCarPlayCover != cp) {
+                    this._sentCarPlayCover = cp;
+                    MIBLogger.getInstance().info("CarPlay cover sent, source type " + this.getBapActiveSourceType());
+                    this._transmitCoverArt(cp);
+                }
+                return;
+            }
+            this._sentCarPlayCover = null;
             if (this.getMediaCoverArtService().isCoverValid()) {
                 this._transmitCurrentCoverArt();
             } else if (bl) {
@@ -179,6 +225,7 @@ BapAudioSdDelegate {
 
    // @Override
     public void executeSequence() {
+        current = this;
         this.getKombiPictureServer();
         this.getMediaCoverArtService();
         this.getBapAudioSdService();
