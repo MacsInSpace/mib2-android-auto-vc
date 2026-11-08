@@ -197,6 +197,21 @@ NavigationServiceListener {
         ManeuverDescriptor_Status maneuverDescriptor_Status = this.dequeueBAPEntity();
         if (this.getNavigationService().getRouteGuidanceState() != 0 || this.getAndroidAutoService().isAndroidAutoRouteGuidanceActive()) {
             this.fillManeuverDescriptor(maneuverDescriptor_Status);
+        } else {
+            // No route: say so explicitly. Left unfilled, the cockpit kept the
+            // last Android Auto arrow after the phone ended its route (#70).
+            maneuverDescriptor_Status.maneuver_1.direction = 0;
+            maneuverDescriptor_Status.maneuver_1.mainElement = 0;
+            maneuverDescriptor_Status.maneuver_1.zLevelGuidance = 0;
+            maneuverDescriptor_Status.maneuver_1.sidestreets.setEmptyString();
+            maneuverDescriptor_Status.maneuver_2.direction = 0;
+            maneuverDescriptor_Status.maneuver_2.mainElement = 0;
+            maneuverDescriptor_Status.maneuver_2.zLevelGuidance = 0;
+            maneuverDescriptor_Status.maneuver_2.sidestreets.setEmptyString();
+            maneuverDescriptor_Status.maneuver_3.direction = 0;
+            maneuverDescriptor_Status.maneuver_3.mainElement = 0;
+            maneuverDescriptor_Status.maneuver_3.zLevelGuidance = 0;
+            maneuverDescriptor_Status.maneuver_3.sidestreets.setEmptyString();
         }
         return maneuverDescriptor_Status;
     }

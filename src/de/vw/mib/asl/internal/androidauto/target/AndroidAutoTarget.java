@@ -198,6 +198,7 @@ public class AndroidAutoTarget
             MIBLogger.getInstance().info("DSI registered (music only, nav focus left to stock)");
             return;
         }
+        this.navigationHandler.clearBeforeNativeFocus();
         this.dsihandler.handleDsiAndroidAuto2NavFocusRequestNotification(Constants.NAVFOCUS_NATIVE, 1);
         this.navigationHandler.navigationFocus(Constants.NAVFOCUS_NATIVE);
         this.navFocusResetByRegistration = true;
@@ -385,6 +386,9 @@ public class AndroidAutoTarget
         MIBLogger.getInstance().trace("focus:" + focus + " n2: "+ valid);
         if (this.isTraceEnabled()) {
             this.trace("TargetAndroidAuto2DSI#navFocusRequestNotification called");
+        }
+        if (valid == 1 && !Variant.MUSIC_ONLY && focus == Constants.NAVFOCUS_NATIVE) {
+            this.navigationHandler.clearBeforeNativeFocus();
         }
         this.dsihandler.handleDsiAndroidAuto2NavFocusRequestNotification(focus, valid);
 

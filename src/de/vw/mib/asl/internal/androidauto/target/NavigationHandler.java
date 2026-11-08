@@ -90,9 +90,31 @@ public class NavigationHandler {
         }
     }
 
+    /*
+     * Called before the stock code flips Android Auto's "guiding" flag off.
+     * While the flag is still on, the cockpit functions still read our data,
+     * so the empty arrow and the cleared distance actually go out. After the
+     * flip they ignore list 751 and the cockpit kept the last arrow (#70).
+     */
+    public void clearBeforeNativeFocus() {
+        try {
+            this.road = "";
+            this.sentRoad = "";
+            this.nextTurn = null;
+            ASLNavBAPFactory.getNavBAPApi().updateBapTurnToInfo("", "");
+            ASLNavBAPFactory.getNavBAPApi().updateBapDistanceToNextManeuver(-1, 0, false, 0);
+            this.maneuverDescriptorSender.clear();
+        } catch (Throwable t) {
+            MIBLogger.getInstance().error("could not clear the cockpit before the focus change: " + t);
+        }
+    }
+
     public void navigationFocus(int focus) {
         NavigationASLDataAdapter adapter = (NavigationASLDataAdapter) APIFactory.getAPIFactory().getNavigationService();
         adapter.datapoolValueChanged(733); // Navigation status id
+        // 732 (route guidance state) wakes RG status, the arrow and the
+        // distance, so all three re-read the new focus.
+        adapter.datapoolValueChanged(732);
 
         switch (focus) {
             case Constants.NAVFOCUS_NATIVE: {
