@@ -9,6 +9,7 @@ import de.vw.mib.bap.functions.BAPFunctionListener;
 import de.vw.mib.bap.functions.Property;
 import de.vw.mib.bap.functions.PropertyListener;
 import de.vw.mib.bap.mqbab2.common.api.androidauto.AndroidAutoService;
+import de.vw.mib.bap.mqbab2.common.api.androidauto.AndroidAutoServiceListener;
 import de.vw.mib.bap.mqbab2.common.api.navigation.NavigationService;
 import de.vw.mib.bap.mqbab2.common.api.navigation.NavigationServiceListener;
 import de.vw.mib.bap.mqbab2.common.api.stages.BAPStage;
@@ -21,9 +22,15 @@ public /* final */ class RGStatus
         extends Function
         implements Property,
         ASLNavSDConstants,
-        NavigationServiceListener {
+        NavigationServiceListener,
+        AndroidAutoServiceListener {
     private Boolean instrumentClusterActionStatus = null;
     protected static /* final */ int[] NAVIGATION_LISTENER_IDS = new int[] { 732, 733 };
+    // isAndroidAutoRouteGuidanceActive. Without it RG_Status was only sent
+    // again on a native navigation change, so when the phone's route ended it
+    // could stay 1 and the cockpit kept the last arrow (#70).
+    protected static /* final */ int[] ANDROID_AUTO_LISTENER_IDS = new int[] { 895953920 };
+    private int lastSent = -1;
     static /* synthetic */ Class class$de$vw$mib$bap$mqbab2$generated$navsd$serializer$RG_Status_Status;
 
     public RGStatus() {
@@ -33,6 +40,7 @@ public /* final */ class RGStatus
     // @Override
     public BAPEntity init(BAPStageInitializer bAPStageInitializer) {
         this.getNavigationService().addNavigationServiceListener(this, NAVIGATION_LISTENER_IDS);
+        this.getAndroidAutoService().addAndroidAutoServiceListener(this, ANDROID_AUTO_LISTENER_IDS);
         return this.computeRGStatusStatus();
     }
 
@@ -75,6 +83,12 @@ public /* final */ class RGStatus
     }
 
     private void sendRouteGuidanceStatus(RG_Status_Status rG_Status_Status) {
+        if (rG_Status_Status.rg_Status != this.lastSent) {
+            MIBLogger.getInstance().info("RG_Status " + rG_Status_Status.rg_Status
+                    + " (phone guiding: " + this.getAndroidAutoService().isAndroidAutoRouteGuidanceActive()
+                    + ", cockpit action: " + this.instrumentClusterActionStatus + ")");
+            this.lastSent = rG_Status_Status.rg_Status;
+        }
         this.getDelegate().getPropertyListener(this).statusProperty(rG_Status_Status, this);
     }
 
@@ -99,6 +113,7 @@ public /* final */ class RGStatus
     // @Override
     public void uninitialize() {
         this.getNavigationService().removeNavigationServiceListener(this, NAVIGATION_LISTENER_IDS);
+        this.getAndroidAutoService().removeAndroidAutoServiceListener(this, ANDROID_AUTO_LISTENER_IDS);
     }
 
     // @Override
@@ -137,6 +152,11 @@ public /* final */ class RGStatus
 
     // @Override
     public void updateNavigationData(NavigationService navigationService, int n) {
+        this.process(-1);
+    }
+
+    // @Override
+    public void updateAndroidAutoData(AndroidAutoService androidAutoService, int n) {
         this.process(-1);
     }
 
