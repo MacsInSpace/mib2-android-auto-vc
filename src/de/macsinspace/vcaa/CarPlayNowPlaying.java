@@ -4,6 +4,7 @@ import de.adi961.miblogger.MIBLogger;
 import de.vw.mib.asl.framework.api.dsiproxy.DSIProxy;
 import de.vw.mib.asl.framework.api.dsiproxy.DSIProxyFactory;
 import de.vw.mib.asl.framework.api.dsiproxy.DSIServiceStateListener;
+import de.vw.mib.asl.internal.kombipictureserver.usecaces.CoverArt;
 import de.vw.mib.bap.mqbab2.audiosd.functions.CurrentStationInfo;
 import de.vw.mib.genericevents.Target;
 import org.dsi.ifc.carplay.AppState;
@@ -29,12 +30,17 @@ import org.dsi.ifc.global.ResourceLocator;
  */
 public final class CarPlayNowPlaying implements DSICarplayListener, DSIServiceStateListener {
     private static final int ATTR_NOWPLAYINGDATA = 3;
+    // 6 = ATTR_COVERARTURL: the order of DSICarplay's ATTR_ fields with
+    // DEVICEINFO 2 and MAINAUDIOTYPE 12 (both in the stock subscription).
+    private static final int ATTR_COVERARTURL = 6;
+    private static final int[] ATTRS = new int[] { ATTR_NOWPLAYINGDATA, ATTR_COVERARTURL };
 
     private static CarPlayNowPlaying instance;
     private static String title = "";
     private static String artist = "";
     private static String album = "";
     private static boolean known;
+    private static ResourceLocator cover;
 
     private final Target owner;
     private DSICarplay service;
@@ -78,6 +84,11 @@ public final class CarPlayNowPlaying implements DSICarplayListener, DSIServiceSt
         if (instance != null && instance.service != null) {
             instance.subscribe();
         }
+    }
+
+    /** The iPhone's cover for the current track, or null. */
+    public static synchronized ResourceLocator coverArt() {
+        return known ? cover : null;
     }
 
     /** {title, artist, album} of the current CarPlay track, or null if none is known. */
@@ -124,7 +135,7 @@ public final class CarPlayNowPlaying implements DSICarplayListener, DSIServiceSt
 
     private void subscribe() {
         try {
-            this.service.setNotification(new int[] { ATTR_NOWPLAYINGDATA }, this);
+            this.service.setNotification(ATTRS, this);
         } catch (Throwable t) {
             log("CarPlay now playing: setNotification failed " + t);
         }
@@ -133,7 +144,7 @@ public final class CarPlayNowPlaying implements DSICarplayListener, DSIServiceSt
     private void detach() {
         try {
             if (this.service != null) {
-                this.service.clearNotification(new int[] { ATTR_NOWPLAYINGDATA }, this);
+                this.service.clearNotification(ATTRS, this);
             }
         } catch (Throwable t) {
             // the service is going away anyway
@@ -147,6 +158,7 @@ public final class CarPlayNowPlaying implements DSICarplayListener, DSIServiceSt
         }
         this.responseListenerAdded = false;
         this.service = null;
+        setCover(null);
         setTrack(null, null, null, false);
     }
 
@@ -165,6 +177,20 @@ public final class CarPlayNowPlaying implements DSICarplayListener, DSIServiceSt
         }
         if (changed) {
             CurrentStationInfo.refreshLater();
+            CoverArt.refreshFromCarPlay();
+        }
+    }
+
+    private static void setCover(ResourceLocator locator) {
+        boolean changed;
+        synchronized (CarPlayNowPlaying.class) {
+            String was = cover == null ? null : cover.toString();
+            String now = locator == null ? null : locator.toString();
+            changed = was == null ? now != null : !was.equals(now);
+            cover = locator;
+        }
+        if (changed) {
+            CoverArt.refreshFromCarPlay();
         }
     }
 
@@ -208,7 +234,17 @@ public final class CarPlayNowPlaying implements DSICarplayListener, DSIServiceSt
     public void updateTelephonyState(TelephonyState a, int valid) { }
     public void updatePlaybackState(PlaybackInfo a, int valid) { }
     public void updatePlayposition(int position, int valid) { }
-    public void updateCoverArtUrl(ResourceLocator a, int valid) { }
+    public void updateCoverArtUrl(ResourceLocator locator, int valid) {
+        try {
+            if (instance != this) {
+                return;
+            }
+            setCover(valid == 1 ? locator : null);
+            log("CarPlay cover: valid=" + valid + " " + (locator == null ? "null" : locator.toString()));
+        } catch (Throwable t) {
+            log("CarPlay cover: update failed " + t);
+        }
+    }
     public void updateTextInputState(int a, int valid) { }
     public void duckAudio(int a, double b) { }
     public void unduckAudio(int a) { }
