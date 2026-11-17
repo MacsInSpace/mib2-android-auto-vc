@@ -203,7 +203,18 @@ public class NavTurn {
         // Android range from 0-360, VW range from 0-256
         // Seems like VW supports increments of 16 (0, 16, 32, 48, 64, and so on)
         // possibly more, but that's detailed enough.
-        return ((((180 + (360 / (16 * 2)) + turnAngle) % 360) * 16) / 360) * 16;
+        //
+        // Android measures the exit angle from the entry in the direction of
+        // travel. The values above hold for anticlockwise roundabouts
+        // (right-hand traffic, side RIGHT). On clockwise roundabouts (side
+        // LEFT: UK, Ireland, Australia) the first exit, 90, is on the left,
+        // so the angle is mirrored before the mapping; without it the
+        // cockpit showed left and right swapped (#24).
+        int angle = turnAngle;
+        if (turnSide == Constants.NAVIGATIONTURNSIDE_LEFT) {
+            angle = 360 - turnAngle;
+        }
+        return ((((180 + (360 / (16 * 2)) + angle) % 360) * 16) / 360) * 16;
     }
 
     public boolean equals(Object obj) {
