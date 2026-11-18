@@ -3,6 +3,8 @@
  */
 package de.vw.mib.bap.mqbab2.navsd.functions;
 
+import de.macsinspace.vcaa.PhoneGuiding;
+
 import de.macsinspace.vcaa.BapStringCompat;
 import de.vw.mib.bap.datatypes.BAPEntity;
 import de.vw.mib.bap.functions.BAPFunctionListener;
@@ -195,7 +197,7 @@ NavigationServiceListener {
 
     private ManeuverDescriptor_Status computeManeuverDescriptorStatus() {
         ManeuverDescriptor_Status maneuverDescriptor_Status = this.dequeueBAPEntity();
-        if (this.getNavigationService().getRouteGuidanceState() != 0 || this.getAndroidAutoService().isAndroidAutoRouteGuidanceActive()) {
+        if (this.getNavigationService().getRouteGuidanceState() != 0 || PhoneGuiding.active(this.getAndroidAutoService())) {
             this.fillManeuverDescriptor(maneuverDescriptor_Status);
         } else {
             // No route: say so explicitly. Left unfilled, the cockpit kept the

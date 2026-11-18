@@ -3,6 +3,8 @@
  */
 package de.vw.mib.bap.mqbab2.navsd.functions;
 
+import de.macsinspace.vcaa.PhoneGuiding;
+
 import de.adi961.miblogger.MIBLogger;
 import de.vw.mib.bap.datatypes.BAPEntity;
 import de.vw.mib.bap.functions.BAPFunctionListener;
@@ -69,8 +71,8 @@ public /* final */ class RGStatus
 
     private void setRouteGuidanceStatus(RG_Status_Status rG_Status_Status) {
         AndroidAutoService androidAutoService = this.getAndroidAutoService();
-        MIBLogger.getInstance().debug("isAndroidAutoRouteGuidanceActive: " + androidAutoService.isAndroidAutoRouteGuidanceActive());
-        if (androidAutoService.isAndroidAutoRouteGuidanceActive()) {
+        MIBLogger.getInstance().debug("isAndroidAutoRouteGuidanceActive: " + PhoneGuiding.describe(androidAutoService));
+        if (PhoneGuiding.active(androidAutoService)) {
             rG_Status_Status.rg_Status = 1;
             return;
         }
@@ -85,7 +87,7 @@ public /* final */ class RGStatus
     private void sendRouteGuidanceStatus(RG_Status_Status rG_Status_Status) {
         if (rG_Status_Status.rg_Status != this.lastSent) {
             MIBLogger.getInstance().info("RG_Status " + rG_Status_Status.rg_Status
-                    + " (phone guiding: " + this.getAndroidAutoService().isAndroidAutoRouteGuidanceActive()
+                    + " (phone guiding: " + PhoneGuiding.describe(this.getAndroidAutoService())
                     + ", cockpit action: " + this.instrumentClusterActionStatus + ")");
             this.lastSent = rG_Status_Status.rg_Status;
         }

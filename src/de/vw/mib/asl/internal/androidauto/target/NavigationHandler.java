@@ -1,6 +1,7 @@
 package de.vw.mib.asl.internal.androidauto.target;
 
 import de.adi961.miblogger.MIBLogger;
+import de.macsinspace.vcaa.PhoneGuiding;
 import de.macsinspace.vcaa.Variant;
 import de.vw.mib.asl.api.navbap.ASLNavBAPFactory;
 import de.vw.mib.bap.mqbab2.common.api.APIFactory;
@@ -110,11 +111,16 @@ public class NavigationHandler {
     }
 
     public void navigationFocus(int focus) {
-        NavigationASLDataAdapter adapter = (NavigationASLDataAdapter) APIFactory.getAPIFactory().getNavigationService();
-        adapter.datapoolValueChanged(733); // Navigation status id
-        // 732 (route guidance state) wakes RG status, the arrow and the
-        // distance, so all three re-read the new focus.
-        adapter.datapoolValueChanged(732);
+        // The jar's own view of the focus first: the stock guiding flag can
+        // stay on after the phone hands the focus back (PhoneGuiding).
+        if (focus == Constants.NAVFOCUS_NATIVE) {
+            PhoneGuiding.focusNative();
+        } else if (focus == Constants.NAVFOCUS_PROJECTED) {
+            PhoneGuiding.focusProjected();
+        }
+        // The cockpit functions re-read now, on this (the unit's) thread, and
+        // see the jar's flag even if the stock one is still on.
+        wakeCockpitFunctions();
 
         switch (focus) {
             case Constants.NAVFOCUS_NATIVE: {
@@ -126,6 +132,14 @@ public class NavigationHandler {
                 break;
             }
         }
+    }
+
+    private static void wakeCockpitFunctions() {
+        NavigationASLDataAdapter adapter = (NavigationASLDataAdapter) APIFactory.getAPIFactory().getNavigationService();
+        adapter.datapoolValueChanged(733); // Navigation status id
+        // 732 (route guidance state) wakes RG status, the arrow and the
+        // distance, so all three re-read the new focus.
+        adapter.datapoolValueChanged(732);
     }
 
     private void navStopped() {

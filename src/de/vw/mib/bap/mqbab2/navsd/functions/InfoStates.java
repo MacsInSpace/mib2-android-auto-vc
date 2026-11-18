@@ -3,6 +3,8 @@
  */
 package de.vw.mib.bap.mqbab2.navsd.functions;
 
+import de.macsinspace.vcaa.PhoneGuiding;
+
 import de.vw.mib.bap.datatypes.BAPEntity;
 import de.vw.mib.bap.functions.BAPFunctionListener;
 import de.vw.mib.bap.functions.Property;
@@ -68,7 +70,7 @@ AndroidAutoServiceListener {
 
     private int getCurrentBAPInfoState() {
         int n;
-        if (this.getAndroidAutoService().isAndroidAutoRouteGuidanceActive()) {
+        if (PhoneGuiding.active(this.getAndroidAutoService())) {
             return 0;
         }
         if (this.getCarPlayService().isCarPlayRouteGuidanceActive() || this.getCarLifeService().isCarLifeRouteGuidanceActive()) {

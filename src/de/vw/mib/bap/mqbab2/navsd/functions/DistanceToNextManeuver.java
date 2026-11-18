@@ -3,6 +3,8 @@
  */
 package de.vw.mib.bap.mqbab2.navsd.functions;
 
+import de.macsinspace.vcaa.PhoneGuiding;
+
 import de.vw.mib.bap.datatypes.BAPEntity;
 import de.vw.mib.bap.functions.BAPFunctionListener;
 import de.vw.mib.bap.functions.Property;
@@ -132,7 +134,7 @@ public /* final */ class DistanceToNextManeuver
     private void setDistanceToNextManeuverStatusData(DistanceToNextManeuver_Status distanceToNextManeuver_Status) {
         NavigationService navigationService = this.getNavigationService();
         NavigationDistanceToNextManeuver navigationDistanceToNextManeuver = navigationService.getDistanceToNextManeuver();
-        boolean bl = navigationService.getRouteGuidanceState() == 1 || this.getAndroidAutoService().isAndroidAutoRouteGuidanceActive();
+        boolean bl = navigationService.getRouteGuidanceState() == 1 || PhoneGuiding.active(this.getAndroidAutoService());
         boolean bl2 = navigationService.getDistanceToNextManeuver().getDistanceToNextManeuverDistance() > 0 && bl;
         distanceToNextManeuver_Status.bargraphInfo.bargraphOnOff = this.verifiedBapBargraphSetting();
         this.computeDistanceAndDistanceUnit(distanceToNextManeuver_Status, bl);
