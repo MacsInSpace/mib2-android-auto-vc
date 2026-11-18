@@ -42,6 +42,7 @@ public class ManeuverDescriptorSender {
         }
 
         sendBapManeuverDescriptor(new BapManeuverDescriptor[]{bapManeuverDescriptor});
+        MIBLogger.getInstance().debug("maneuver: " + bapManeuverDescriptor.toString());
         this.lastManeuverDescriptor = bapManeuverDescriptor;
         notifyManeuverChanged();
     }
