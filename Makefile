@@ -93,6 +93,28 @@ turns: jdk
 	@$(JAVAC) -source 1.2 -target 1.2 -cp $(CLASSPATH) -d $(TURNS_CLASSES_DIR) `find $(TURNS_SRC_DIR) -name '*.java'`
 	@$(JAR) cvf $(OUT_DIR)/$(TURNS_JAR_FILE) -C $(TURNS_CLASSES_DIR) .
 
+# Music-only jar for K3342 (MHI2_ER_VWG11_K3342): the music sources adapted by
+# variants/k3342.sh and compiled against K3342's own lsd.jar, so the firmware
+# constants javac copies in are K3342's. LSD_JAR_K3342 is that unit's jar
+# (from its lsd.jxe; firmware, keep it local).
+LSD_JAR_K3342 = lsd_K3342.jar
+MUSIC_K3342_SRC_DIR = $(BUILD_DIR)/music-k3342-src
+MUSIC_K3342_CLASSES_DIR = $(BUILD_DIR)/music-k3342-classes
+MUSIC_K3342_JAR_FILE = VCAndroidAutoMusic_K3342.jar
+
+.PHONY: music-k3342
+music-k3342: jdk
+	@echo "Compiling the music-only jar for K3342..."
+	@rm -rf $(MUSIC_K3342_SRC_DIR) $(MUSIC_K3342_CLASSES_DIR)
+	@mkdir -p $(MUSIC_K3342_SRC_DIR) $(MUSIC_K3342_CLASSES_DIR) $(OUT_DIR)
+	@cp -R $(SRC_DIR)/. $(MUSIC_K3342_SRC_DIR)/
+	@rm -rf $(MUSIC_K3342_SRC_DIR)/de/vw/mib/bap/mqbab2/navsd
+	@sed -i 's/MUSIC_ONLY = false;/MUSIC_ONLY = true;/' $(MUSIC_K3342_SRC_DIR)/de/macsinspace/vcaa/Variant.java
+	@grep -q 'MUSIC_ONLY = true;' $(MUSIC_K3342_SRC_DIR)/de/macsinspace/vcaa/Variant.java
+	@sh variants/k3342.sh $(MUSIC_K3342_SRC_DIR)
+	@$(JAVAC) -source 1.2 -target 1.2 -cp ".:$(LSD_JAR_K3342)" -d $(MUSIC_K3342_CLASSES_DIR) `find $(MUSIC_K3342_SRC_DIR) -name '*.java'`
+	@$(JAR) cvf $(OUT_DIR)/$(MUSIC_K3342_JAR_FILE) -C $(MUSIC_K3342_CLASSES_DIR) .
+
 # Clean the compiled files and jar
 .PHONY: clean
 clean:
