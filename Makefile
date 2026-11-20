@@ -115,6 +115,22 @@ music-k3342: jdk
 	@$(JAVAC) -source 1.2 -target 1.2 -cp ".:$(LSD_JAR_K3342)" -d $(MUSIC_K3342_CLASSES_DIR) `find $(MUSIC_K3342_SRC_DIR) -name '*.java'`
 	@$(JAR) cvf $(OUT_DIR)/$(MUSIC_K3342_JAR_FILE) -C $(MUSIC_K3342_CLASSES_DIR) .
 
+TURNS_K3342_SRC_DIR = $(BUILD_DIR)/turns-k3342-src
+TURNS_K3342_CLASSES_DIR = $(BUILD_DIR)/turns-k3342-classes
+TURNS_K3342_JAR_FILE = VCAndroidAutoTurns_K3342.jar
+
+.PHONY: turns-k3342
+turns-k3342: jdk
+	@echo "Compiling the turns jar for K3342..."
+	@rm -rf $(TURNS_K3342_SRC_DIR) $(TURNS_K3342_CLASSES_DIR)
+	@mkdir -p $(TURNS_K3342_SRC_DIR) $(TURNS_K3342_CLASSES_DIR) $(OUT_DIR)
+	@cp -R $(SRC_DIR)/. $(TURNS_K3342_SRC_DIR)/
+	@sed -i 's/KEEP_MAP_VIEW = false;/KEEP_MAP_VIEW = true;/' $(TURNS_K3342_SRC_DIR)/de/macsinspace/vcaa/Variant.java
+	@grep -q 'KEEP_MAP_VIEW = true;' $(TURNS_K3342_SRC_DIR)/de/macsinspace/vcaa/Variant.java
+	@sh variants/k3342.sh $(TURNS_K3342_SRC_DIR)
+	@$(JAVAC) -source 1.2 -target 1.2 -cp ".:$(LSD_JAR_K3342)" -d $(TURNS_K3342_CLASSES_DIR) `find $(TURNS_K3342_SRC_DIR) -name '*.java'`
+	@$(JAR) cvf $(OUT_DIR)/$(TURNS_K3342_JAR_FILE) -C $(TURNS_K3342_CLASSES_DIR) .
+
 # Clean the compiled files and jar
 .PHONY: clean
 clean:
