@@ -168,6 +168,14 @@ public class NavigationHandler {
         sendRoad();
 
         nextTurn = new NavTurn(turnSide, event, turnAngle, turnNumber);
+
+        // A new route after the dial was handed back: the phone may not ask
+        // for the focus again (#160), so its turn data turns guiding back on.
+        if (PhoneGuiding.turnArrived()) {
+            MIBLogger.getInstance().info("new turn from the phone after a hand-back: phone guiding again");
+            maneuverDescriptorSender.reset();
+            wakeCockpitFunctions();
+        }
     }
 
     public void handleUpdateNextTurnDistanceEvent(int distanceMeters, int timeSeconds) {

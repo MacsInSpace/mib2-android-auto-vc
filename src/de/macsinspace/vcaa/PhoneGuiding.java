@@ -14,22 +14,39 @@ import de.vw.mib.bap.mqbab2.common.api.androidauto.AndroidAutoService;
  * So the jar also follows the focus messages itself: the phone guides only
  * while the stock flag says so and the last focus the jar saw was the phone's.
  * Before the jar has seen any focus message it follows the stock flag alone.
+ *
+ * After a hand-back the phone does not always ask for the focus again when
+ * the next route starts (#160: only "native" came, twice), so a new turn from
+ * the phone after a hand-back also counts as the phone guiding again.
  */
 public final class PhoneGuiding {
     private static final int UNKNOWN = -1;
     private static final int NATIVE = 0;
     private static final int PROJECTED = 1;
+    /** A turn this soon after the hand-back is the old route's last one. */
+    private static final long SETTLE_MS = 3000;
     private static volatile int focus = UNKNOWN;
+    private static volatile long nativeAt;
 
     private PhoneGuiding() {
     }
 
     public static void focusNative() {
+        nativeAt = System.currentTimeMillis();
         focus = NATIVE;
     }
 
     public static void focusProjected() {
         focus = PROJECTED;
+    }
+
+    /** A new turn arrived: true if this ends a hand-back (focus was the car's). */
+    public static boolean turnArrived() {
+        if (focus != NATIVE || System.currentTimeMillis() - nativeAt < SETTLE_MS) {
+            return false;
+        }
+        focus = PROJECTED;
+        return true;
     }
 
     public static boolean active(AndroidAutoService service) {
